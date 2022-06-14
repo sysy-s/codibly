@@ -4,6 +4,9 @@ import Pagination from "./Pagination";
 import { useNavigate } from "react-router";
 import { useSearchParams } from "react-router-dom";
 import ColorTable from "./ColorTable";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import Card from "@mui/material/Card";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -16,6 +19,8 @@ export default function Home() {
   const [page, setPage] = useState(pageParam ? pageParam : 1);
   const [maxPages, setMaxPages] = useState(1);
   const [query, setQuery] = useState(queryParam ? queryParam : "");
+  const [notFound, setNotFound] = useState(false);
+
   const queryRef = useRef();
 
   // constructs search params ex ?page=2 or ?id=1
@@ -34,19 +39,25 @@ export default function Home() {
   function getData() {
     const queryString = constructQueryString(); // used to create search params
     const url = `https://reqres.in/api/products?${queryString}&per_page=5`;
-    
 
-    axios.get(url).then((res) => {
-      console.log(url);
-      console.log(res.data.data);
-      setData(() => res.data.data);
-      setMaxPages(() => res.data.total_pages);
-      navigate({ pathname: "/", search: queryString });
-    });
+    axios
+      .get(url)
+      .then((res) => {
+        setData(() => res.data.data);
+        setMaxPages(() => res.data.total_pages);
+        navigate({ pathname: "/", search: queryString });
+
+        if (res.data.data.length === 0) {
+          setNotFound(() => true);
+        }
+      })
+      .catch((err) => {
+        setNotFound(() => true);
+        navigate({ pathname: "/", search: queryString });
+      });
   }
 
   function preventNonNumeric(e) {
-    console.log(e.key);
     if (isNaN(e.key) && e.key !== "Backspace" && e.key !== "Enter") {
       e.preventDefault();
     }
@@ -55,6 +66,7 @@ export default function Home() {
   // submit search
   function submitId(e) {
     e.preventDefault();
+    console.log(queryRef.current.value);
     setQuery(queryRef.current.value);
   }
 
@@ -64,14 +76,45 @@ export default function Home() {
   }, [query, page]);
 
   return (
-    <div style={{ width: "fit-content" }}>
+    <div style={{ width: "fit-content", margin: "1.5rem" }}>
       <form onSubmit={(e) => submitId(e)}>
-        <input type="number" onKeyDown={e => preventNonNumeric(e)} ref={queryRef} placeholder="ID..." />
+        <TextField
+          id="outlined-basic"
+          label="ID"
+          variant="outlined"
+          type="number"
+          onKeyDown={(e) => preventNonNumeric(e)}
+          inputRef={queryRef}
+        />
       </form>
-      <ColorTable data={data} />
-      {Array.isArray(data) ? <Pagination page={page} setPage={setPage} maxPages={maxPages} path="/" /> :
-      <button onClick={() => setQuery(() => "")}>Go back</button>
-      }
+      {!notFound ? (
+        <ColorTable data={data} />
+      ) : (
+        <Card>
+          <h1 style={{ textAlign: "center" }}>Not Found</h1>
+        </Card>
+      )}
+      {!notFound && Array.isArray(data) ? (
+        <Pagination
+          page={page}
+          setPage={setPage}
+          maxPages={maxPages}
+          path="/"
+        />
+      ) : (
+        <div style={{width: "100%", display: "flex", justifyContent: "center", paddingTop: "1.5rem"}}>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              setQuery("");
+              setPage(1);
+              setNotFound(false);
+            }}
+          >
+            Go back
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

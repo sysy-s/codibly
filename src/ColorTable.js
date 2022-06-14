@@ -1,30 +1,41 @@
+import Table from "@mui/material/Table";
+import TableCell from "@mui/material/TableCell";
+import TableRow from "@mui/material/TableRow";
+import TableContainer from "@mui/material/TableContainer";
+import TableBody from "@mui/material/TableBody";
+import TableHead from "@mui/material/TableHead";
+
 export default function ColorTable({ data }) {
   return (
-    <table>
-      <tbody>
-        <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Year</th>
-        </tr>
-        {Array.isArray(data) ? (
-          data.map((el) => (
-            <tr style={{ background: el.color }} key={el.id}>
-              <td>{el.id}</td>
-              <td>{el.name}</td>
-              <td>{el.year}</td>
-            </tr>
-          ))
-        ) : (
-          <>
-            <tr style={{ background: data.color }} key={data.id}>
-              <td>{data.id}</td>
-              <td>{data.name}</td>
-              <td>{data.year}</td>
-            </tr>
-          </>
-        )}
-      </tbody>
-    </table>
+    <TableContainer>
+      <Table style={{ width: "100%" }}>
+        <TableHead>
+          <TableRow>
+            <TableCell>ID</TableCell>
+            <TableCell>Name</TableCell>
+            <TableCell>Year</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {Array.isArray(data) ? (
+            data.map((el) => (
+              <TableRow style={{ background: el.color }} key={el.id}>
+                <TableCell>{el.id}</TableCell>
+                <TableCell>{el.name}</TableCell>
+                <TableCell>{el.year}</TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <>
+              <TableRow style={{ background: data.color }} key={data.id}>
+                <TableCell>{data.id}</TableCell>
+                <TableCell>{data.name}</TableCell>
+                <TableCell>{data.year}</TableCell>
+              </TableRow>
+            </>
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 }
